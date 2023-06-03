@@ -1,0 +1,78 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+:root{
+    --BG: rgb(106, 4, 15);
+    --ACCENT: rgb(250, 163, 7);
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--BG);
+    color: var(--ACCENT);
+}
+
+h1, p, .btns{
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+h1 {
+    top: 15vh;
+    font-size: 6rem;
+}
+p{
+    bottom: 100px;
+    font-size: 1.5rem;
+    transition: transform 300ms;
+}
+p.shrink{
+    display: none;
+}
+
+.btns{
+    height: clamp(0px, 50vh, 400px);
+
+    position: absolute;
+    top: 40vh;
+
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+button {
+    height: clamp(50px, 10vh, 150px);
+    width: 300px;
+    border: none;
+    cursor: pointer;
+}
+
+@media (max-width: 500px){
+    h1{
+        font-size: clamp(3rem, 18vw, 6rem);
+    }
+    p{
+        font-size: 1rem;
+    }
+}
+
+@media (max-height: 800px){
+    p{
+        bottom: 25px;
+    }
+}
+@media (max-height: 500px){
+    h1{
+        font-size: 3rem;
+    }
+    p{
+        font-size: 1rem;
+    }
+    button{
+        width: 150px;
+    }
+}
