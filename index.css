@@ -16,6 +16,18 @@ body {
     color: var(--ACCENT);
 }
 
+#startMenu > button {
+    width: 100px;
+    aspect-ratio: 1;
+    border-bottom: 5px solid var(--ACCENT);
+    border-right: 5px solid var(--ACCENT);
+    border-bottom-right-radius: 100%;
+
+    font-size: 2rem;
+    color: var(--ACCENT);
+
+    background-color: black;
+}
 h1, p, .btns{
     position: absolute;
     left: 50%;
@@ -49,6 +61,52 @@ button {
     width: 300px;
     border: none;
     cursor: pointer;
+}
+
+.board {
+    aspect-ratio: 1;
+    width: clamp(0px, 90%, 800px);
+    margin: auto;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 5px;
+}
+.board > div {
+    border: 1px solid white;
+    cursor: pointer;
+
+    position: relative;
+}
+.board > div > div{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+.board > div > .x-line{
+    width: 90%;
+    height: 10%;
+
+    transform: translate(-50%, -50%) rotate(-45deg);
+    background-color: var(--ACCENT);
+}
+.board > div > .x-line:nth-of-type(2){
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+.board > div > .o-div{
+    width: 70%;
+    aspect-ratio: 1;
+    border-radius: 200px;
+    border: 20px solid var(--ACCENT);
+
+    transform: translate(-50%, -50%);
+}
+.hidden{
+    display: none;
+    position: absolute;
+    opacity: 0;
+    transform: scale(0);
 }
 
 @media (max-width: 500px){
