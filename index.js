@@ -1,14 +1,15 @@
-document.addEventListener('DOMContentLoaded', startGame);
+document.addEventListener('DOMContentLoaded', load);
 
 let turnX = true;
 let mode = '';
+let pvcCharacter = 'X';
 let backIndex = 0;
 
-function startGame() {
-	eventHandlers();
+function load() {
+	onLoadHandlers();
 }
 
-function eventHandlers() {
+function onLoadHandlers() {
 	const startMenu = document.querySelector('#startMenu');
 	const playArea = document.querySelector('#playArea');
 
@@ -51,19 +52,15 @@ function eventHandlers() {
 	btn3.onclick = () => (mode = 'PvC-Hard');
 	btn4.onclick = () => (mode = 'PvC-Impos');
 
-	const btns = [btn0, btn2, btn3, btn4];
-	btns.forEach((btn) => {
+	[btn0, btn2, btn3, btn4].forEach((btn) => {
 		btn.addEventListener('click', () => {
 			startMenu.classList.add('hidden');
 			playArea.classList.remove('hidden');
+			startGame();
 		});
 	});
 
 	//playArea
-	const board = document.querySelector('[data-board]');
-	[...board.children].forEach((div) => {
-		div.addEventListener('click', () => manageModes(div), { once: true });
-	});
 
 	//auxiliaries
 	function toggleHidden(target) {
@@ -77,26 +74,103 @@ function eventHandlers() {
 	}
 }
 
-function manageModes(target) {
+const squares = document.querySelectorAll('[data-board] > div');
+
+function startGame() {
 	switch (mode) {
 		case 'PvP':
-			enablePvP(target);
+			enablePvP();
 			break;
-		
+		case 'PvC-Easy':
+			enablePvCEasy();
+			break;
+		case 'PvC-Hard':
+			enablePvCHard();
+			break;
+		case 'PvC-Impos':
+			enablePvCImpos();
+			break;
 	}
 }
 
-function enablePvP(target) {
-	if (turnX) {
-		buildX(target);
-		target.classList.add('X');
-		turnX = false;
-	} else {
-		buildO(target);
-		target.classList.add('O');
-		turnX = true;
+function enablePvP() {
+	squares.forEach((square) => {
+		square.addEventListener('click', () => {
+			if (!square.childElementCount) {
+				//
+				if (turnX) {
+					addXSwitchTurn(square);
+				} else {
+					addOSwitchTurn(square);
+				}
+				checkWinner();
+				//
+			}
+		});
+	});
+}
+
+function enablePvCEasy() {
+	if (pvcCharacter === 'O') addRandomX();
+	squares.forEach((square) => {
+		square.addEventListener('click', () => {
+			if (!square.childElementCount) {
+				//
+				if (pvcCharacter === 'X') {
+					addXSwitchTurn(square);
+					addRandomO();
+				} else {
+					addOSwitchTurn(square);
+					addRandomX();
+				}
+				//
+			}
+		});
+	});
+}
+
+function enablePvCHard() {}
+
+function enablePvCImpos() {}
+
+function addRandomO() {
+	const luckyDiv = squares[randomNum(9)];
+	if (!luckyDiv.childElementCount) {
+		addOSwitchTurn(luckyDiv);
+		return;
 	}
-	checkWinner();
+	if (spaceAvalabile()) addRandomO();
+}
+
+function addRandomX() {
+	const luckyDiv = squares[randomNum(9)];
+	if (!luckyDiv.childElementCount) {
+		addXSwitchTurn(luckyDiv);
+		return;
+	}
+	addRandomX();
+}
+
+function spaceAvalabile() {
+	for (let i = 0; i <= 8; i++) {
+		if (!squares[i].childElementCount) return 1;
+	}
+}
+
+function randomNum(max) {
+	return Math.floor(Math.random() * max);
+}
+
+function addXSwitchTurn(target) {
+	buildX(target);
+	target.classList.add('X');
+	turnX = false;
+}
+
+function addOSwitchTurn(target) {
+	buildO(target);
+	target.classList.add('O');
+	turnX = true;
 }
 
 function checkWinner() {
