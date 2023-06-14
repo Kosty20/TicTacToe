@@ -1,17 +1,13 @@
 document.addEventListener('DOMContentLoaded', load);
 
-let turnX = true;
-let mode = '';
-let pvcCharacter = 'X';
-let backIndex = 0;
-
 function load() {
 	onLoadHandlers();
 }
 
 function onLoadHandlers() {
 	const startMenu = document.querySelector('#startMenu');
-	const playArea = document.querySelector('#playArea');
+	const game = document.querySelector('#game');
+	let backIndex = 0;
 
 	//startMenu
 	const p = document.querySelector('[data-p]');
@@ -47,20 +43,17 @@ function onLoadHandlers() {
 		backIndex++;
 	});
 
-	btn0.onclick = () => (mode = 'PvP');
-	btn2.onclick = () => (mode = 'PvC-Easy');
-	btn3.onclick = () => (mode = 'PvC-Hard');
-	btn4.onclick = () => (mode = 'PvC-Impos');
-
 	[btn0, btn2, btn3, btn4].forEach((btn) => {
 		btn.addEventListener('click', () => {
-			startMenu.classList.add('hidden');
-			playArea.classList.remove('hidden');
-			startGame();
+			toggleHidden(startMenu);
+			toggleHidden(game);
 		});
 	});
 
-	//playArea
+	btn0.onclick = () => newGamePvP();
+	btn2.onclick = () => newGamePvC(1, 0);
+	btn3.onclick = () => newGamePvC(4)
+	btn4.onclick = () => newGamePvC(-1)
 
 	//auxiliaries
 	function toggleHidden(target) {
@@ -74,149 +67,273 @@ function onLoadHandlers() {
 	}
 }
 
-const squares = document.querySelectorAll('[data-board] > div');
+function newGamePvP() {
+	const board = Board();
 
-function startGame() {
-	switch (mode) {
-		case 'PvP':
-			enablePvP();
-			break;
-		case 'PvC-Easy':
-			enablePvCEasy();
-			break;
-		case 'PvC-Hard':
-			enablePvCHard();
-			break;
-		case 'PvC-Impos':
-			enablePvCImpos();
-			break;
-	}
-}
+	const boardDiv = document.querySelector('[data-board]');
+	boardDiv.className = '';
 
-function enablePvP() {
-	squares.forEach((square) => {
-		square.addEventListener('click', () => {
-			if (!square.childElementCount) {
-				//
-				if (turnX) {
-					addXSwitchTurn(square);
-				} else {
-					addOSwitchTurn(square);
-				}
-				checkWinner();
-				//
+	const cells = boardDiv.querySelectorAll('div');
+
+	let playerTurn = 1;
+	cells.forEach((cell, index) => {
+		cell.addEventListener('click', () => {
+			if (cell.className || board.isTerminal()) return;
+
+			board.addSymbol(playerTurn, index, cell);
+
+			if (board.isTerminal()) {
+				console.log(board.isTerminal().winner, board.state);
 			}
+
+			playerTurn = playerTurn ? 0 : 1;
 		});
 	});
 }
 
-function enablePvCEasy() {
-	if (pvcCharacter === 'O') addRandomX();
-	squares.forEach((square) => {
-		square.addEventListener('click', () => {
-			if (!square.childElementCount) {
-				//
-				if (pvcCharacter === 'X') {
-					addXSwitchTurn(square);
-					addRandomO();
-				} else {
-					addOSwitchTurn(square);
-					addRandomX();
+function Board(state = ['', '', '', '', '', '', '', '', '']) {
+	function insert(symbol, pos) {
+		if (pos < 0 || pos > 8) {
+			return console.error('Cell index does not exist');
+		}
+		if (symbol !== 'o' && symbol !== 'x') {
+			return console.error('The symbol can only be x or o');
+		}
+		if (this.state[pos]) {
+			return;
+		}
+		this.state[pos] = symbol;
+	}
+
+	function getAvalabileMoves() {
+		const moves = [];
+		this.state.forEach((cell, index) => {
+			if (!cell) moves.push(index);
+		});
+		return moves;
+	}
+
+	//The every helper will return true if every iteration returned true
+	function isEmpty() {
+		return this.state.every((cell) => !cell);
+	}
+	function isFull() {
+		return this.state.every((cell) => cell);
+	}
+	function isTerminal() {
+		if (this.isEmpty()) return false;
+
+		//Horizontal wins
+		if (this.state[0] && this.state[0] === this.state[1] && this.state[0] === this.state[2]) {
+			return { winner: this.state[0], direction: 'H', row: 1 };
+		}
+		if (this.state[3] && this.state[3] === this.state[4] && this.state[3] === this.state[5]) {
+			return { winner: this.state[3], direction: 'H', row: 2 };
+		}
+		if (this.state[6] && this.state[6] === this.state[7] && this.state[6] === this.state[8]) {
+			return { winner: this.state[6], direction: 'H', row: 3 };
+		}
+
+		//Vertical wins
+		if (this.state[0] && this.state[0] === this.state[3] && this.state[0] === this.state[6]) {
+			return { winner: this.state[0], direction: 'V', column: 1 };
+		}
+		if (this.state[1] && this.state[1] === this.state[4] && this.state[1] === this.state[7]) {
+			return { winner: this.state[1], direction: 'V', column: 2 };
+		}
+		if (this.state[2] && this.state[2] === this.state[5] && this.state[2] === this.state[8]) {
+			return { winner: this.state[2], direction: 'V', column: 3 };
+		}
+
+		//Diagonal wins
+		if (this.state[0] && this.state[0] === this.state[4] && this.state[0] === this.state[8]) {
+			return { winner: this.state[0], direction: 'D', diagonal: 'main' };
+		}
+		if (this.state[2] && this.state[2] === this.state[4] && this.state[2] === this.state[6]) {
+			return { winner: this.state[2], direction: 'D', diagonal: 'counter' };
+		}
+
+		if (this.isFull()) return { winner: 'draw' };
+		
+		return false;
+	}
+
+	function addSymbol(turn, index, container) {
+		if (turn) {
+			_addX(container);
+			this.insert('x', index);
+		} else {
+			_addO(container);
+			this.insert('o', index);
+		}
+	}
+
+	//Aux
+	function _addX(target) {
+		const div1 = document.createElement('div');
+		div1.classList.add('x-line');
+
+		const div2 = document.createElement('div');
+		div2.classList.add('x-line');
+
+		target.append(div1, div2);
+		target.classList.add('X');
+	}
+
+	function _addO(target) {
+		const div = document.createElement('div');
+		div.classList.add('o-div');
+
+		target.append(div);
+		target.classList.add('O');
+	}
+
+	return {
+		state,
+		isEmpty,
+		isFull,
+		isTerminal,
+		insert,
+		getAvalabileMoves,
+		addSymbol,
+	};
+}
+
+function AIPlayer(maxDepth = -1) {
+	const nodesMap = new Map();
+
+	function getBestMove(board, maximizing = true, callback = () => {}, depth = 0) {
+		//Clear the map if theres a new move to be made
+		if (depth === 0) this.nodesMap.clear();
+		
+		//if the board is terminal, return a minmax
+		if (board.isTerminal() || depth === this.maxDepth) {
+            if (board.isTerminal().winner === "x") {
+                return 100 - depth;
+            } else if (board.isTerminal().winner === "o") {
+                return -100 + depth;
+            }
+            return 0;
+        }
+		
+		if (maximizing) {
+			let best = -100;
+			//loop through all empty cells
+			board.getAvalabileMoves().forEach((index) => {
+				//get current board copy
+				const copy = Board([...board.state]);
+				//create imaginary  move
+				copy.insert('x', index);
+				//constantly updating best value
+				const nodeValue = this.getBestMove(copy, false, callback, depth + 1);
+				best = Math.max(best, nodeValue);
+
+				//in the main call, pair best value with the avalabile moves
+				if (depth === 0) {
+					const moves = this.nodesMap.has(nodeValue)
+						? `${this.nodesMap.get(nodeValue)}, ${index}`
+						: index;
+					this.nodesMap.set(nodeValue, moves);
 				}
-				//
+			});
+			//in main call, return index of the best move
+			if (depth === 0) {
+				let returnVal;
+				if (typeof this.nodesMap.get(best) === 'string') {
+					const arr = this.nodesMap.get(best).split(',');
+					const rand = Math.floor(Math.random() * arr.length);
+					returnVal = arr[rand];
+				} else {
+					returnVal = this.nodesMap.get(best);
+				}
+				callback(returnVal);
+				return returnVal;
 			}
+			return best;
+		}
+
+		if (!maximizing) {
+			let best = 100;
+			board.getAvalabileMoves().forEach((index) => {
+				const copy = Board([...board.state]);
+				copy.insert('o', index);
+				const nodeValue = this.getBestMove(copy, true, callback, depth + 1);
+				best = Math.min(best, nodeValue);
+
+				if (depth === 0) {
+					const moves = this.nodesMap.has(nodeValue)
+						? `${this.nodesMap.get(nodeValue)}, ${index}`
+						: index;
+					this.nodesMap.set(nodeValue, moves);
+				}
+			});
+			if (depth === 0) {
+				let returnVal;
+				if (typeof this.nodesMap.get(best) === 'string') {
+					const arr = this.nodesMap.get(best).split(',');
+					const rand = Math.floor(Math.random() * arr.length);
+					returnVal = arr[rand];
+				} else {
+					returnVal = this.nodesMap.get(best);
+				}
+				callback(returnVal);
+				return returnVal;
+			}
+			return best;
+		}
+	}
+
+	return {
+		maxDepth,
+		nodesMap,
+		getBestMove,
+	};
+}
+
+function newGamePvC(difficulty, startingPlayer = 1) {
+	const computer = AIPlayer(difficulty);
+	const board = Board();
+
+	const boardDiv = document.querySelector('#board');
+	boardDiv.className = '';
+
+	const boardCells = boardDiv.querySelectorAll('div');
+
+	let playerTurn = startingPlayer;
+
+	if (!startingPlayer) {
+		const firstChoice = Math.floor(Math.random() * 5) * 2; //center or corner index;
+		board.addSymbol(startingPlayer, firstChoice, boardCells[firstChoice]);
+		playerTurn = 1;
+	}
+
+	boardCells.forEach((cell, index) => {
+		cell.addEventListener('click', () => {
+			//PLAYER INPUT
+			if (cell.className || board.isTerminal() || !playerTurn) return;
+
+			board.addSymbol(playerTurn, index, cell);
+			if (board.isTerminal()) {
+				console.log(board.isTerminal().winner, board.state);
+			}
+			playerTurn = 0;
+
+			//AI INPUT
+			computer.getBestMove(board, !startingPlayer, (best) => {
+				board.addSymbol(playerTurn, +best, boardCells[+best]);
+				if (board.isTerminal()) {
+					console.log(board.isTerminal().winner, board.state);
+				}
+				playerTurn = 1;
+			});
 		});
 	});
 }
 
-function enablePvCHard() {}
-
-function enablePvCImpos() {}
-
-function addRandomO() {
-	const luckyDiv = squares[randomNum(9)];
-	if (!luckyDiv.childElementCount) {
-		addOSwitchTurn(luckyDiv);
-		return;
-	}
-	if (spaceAvalabile()) addRandomO();
-}
-
-function addRandomX() {
-	const luckyDiv = squares[randomNum(9)];
-	if (!luckyDiv.childElementCount) {
-		addXSwitchTurn(luckyDiv);
-		return;
-	}
-	addRandomX();
-}
-
-function spaceAvalabile() {
-	for (let i = 0; i <= 8; i++) {
-		if (!squares[i].childElementCount) return 1;
-	}
-}
-
-function randomNum(max) {
-	return Math.floor(Math.random() * max);
-}
-
-function addXSwitchTurn(target) {
-	buildX(target);
-	target.classList.add('X');
-	turnX = false;
-}
-
-function addOSwitchTurn(target) {
-	buildO(target);
-	target.classList.add('O');
-	turnX = true;
-}
-
-function checkWinner() {
-	const divs = document.querySelectorAll('.board > div');
-
-	if (matched()) {
-		console.log('winner');
-	}
-
-	function matched() {
-		if (
-			checkDivs(0, 1, 2) ||
-			checkDivs(3, 4, 5) ||
-			checkDivs(6, 7, 8) ||
-			checkDivs(0, 3, 6) ||
-			checkDivs(1, 4, 7) ||
-			checkDivs(2, 5, 8) ||
-			checkDivs(0, 4, 8) ||
-			checkDivs(2, 4, 6)
-		) {
-			return true;
-		}
-	}
-
-	function checkDivs(a, b, c) {
-		if (
-			divs[a].className &&
-			divs[a].className === divs[b].className &&
-			divs[b].className === divs[c].className
-		) {
-			return true;
-		}
-	}
-}
-
-function buildX(target) {
-	const div1 = document.createElement('div');
-	const div2 = document.createElement('div');
-	div1.classList.add('x-line');
-	div2.classList.add('x-line');
-
-	target.append(div1, div2);
-}
-
-function buildO(target) {
-	const div = document.createElement('div');
-	div.classList.add('o-div');
-	target.append(div);
+function drawWinningLine(statusObject) {
+	if (!statusObject) return;
+	const { winner, direction, row, column, diagonal } = statusObject;
+	if (winner === 'draw') return;
+	const board = document.getElementById('board');
+	addClass(board, `${direction.toLowerCase()}-${row || column || diagonal}`);
 }

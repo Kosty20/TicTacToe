@@ -63,7 +63,7 @@ button {
     cursor: pointer;
 }
 
-.board {
+#board {
     aspect-ratio: 1;
     width: clamp(0px, 90%, 800px);
     margin: auto;
@@ -73,28 +73,28 @@ button {
     grid-template-rows: repeat(3, 1fr);
     gap: 5px;
 }
-.board > div {
+#board > div {
     border: 1px solid white;
     cursor: pointer;
 
     position: relative;
 }
-.board > div > div{
+#board > div > div{
     position: absolute;
     top: 50%;
     left: 50%;
 }
-.board > div > .x-line{
+#board > div > .x-line{
     width: 90%;
     height: 10%;
 
     transform: translate(-50%, -50%) rotate(-45deg);
     background-color: var(--ACCENT);
 }
-.board > div > .x-line:nth-of-type(2){
+#board > div > .x-line:nth-of-type(2){
     transform: translate(-50%, -50%) rotate(45deg);
 }
-.board > div > .o-div{
+#board > div > .o-div{
     width: 70%;
     aspect-ratio: 1;
     border-radius: 200px;
