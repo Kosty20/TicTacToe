@@ -1,136 +1,209 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 
-:root{
-    --BG: rgb(106, 4, 15);
-    --ACCENT: rgb(250, 163, 7);
+:root {
+	--BG: rgb(106, 4, 15);
+	--ACCENT: rgb(250, 163, 7);
 }
 
 body {
-    min-height: 100vh;
-    background-color: var(--BG);
-    color: var(--ACCENT);
+	min-height: 100vh;
+	background-color: var(--BG);
+	color: var(--ACCENT);
 }
 
-#startMenu > button {
-    width: 100px;
-    aspect-ratio: 1;
-    border-bottom: 5px solid var(--ACCENT);
-    border-right: 5px solid var(--ACCENT);
-    border-bottom-right-radius: 100%;
+#startMenu > button,
+#game > button {
+	width: 100px;
+	aspect-ratio: 1;
+	border-bottom: 5px solid var(--ACCENT);
+	border-left: 5px solid var(--ACCENT);
+	border-bottom-left-radius: 100px;
 
-    font-size: 2rem;
-    color: var(--ACCENT);
+	position: absolute;
+	right: 0;
 
-    background-color: black;
+	font-size: 2rem;
+	color: var(--ACCENT);
+
+	background-color: black;
 }
-h1, p, .btns{
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+h1,
+p,
+.btns {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
 }
 h1 {
-    top: 15vh;
-    font-size: 6rem;
+	top: 15vh;
+	font-size: 6rem;
 }
-p{
-    bottom: 100px;
-    font-size: 1.5rem;
-    transition: transform 300ms;
+p {
+	bottom: 100px;
+	font-size: 1.5rem;
+	transition: transform 300ms;
 }
-p.shrink{
-    display: none;
+p.shrink {
+	display: none;
 }
 
-.btns{
-    height: clamp(0px, 50vh, 400px);
+.btns {
+	height: clamp(0px, 50vh, 400px);
 
-    position: absolute;
-    top: 40vh;
+	position: absolute;
+	top: 40vh;
 
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 40px;
 }
 button {
-    height: clamp(50px, 10vh, 150px);
-    width: 300px;
-    border: none;
-    cursor: pointer;
+	height: clamp(50px, 10vh, 150px);
+	width: 300px;
+	border: none;
+	cursor: pointer;
 }
 
 #board {
-    aspect-ratio: 1;
-    width: clamp(0px, 90%, 800px);
-    margin: auto;
+	position: relative;
+	aspect-ratio: 1;
+	width: clamp(0px, 90%, 800px);
+	margin: auto;
 
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 5px;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(3, 1fr);
+	gap: 5px;
 }
 #board > div {
-    border: 1px solid white;
-    cursor: pointer;
+	border: 1px solid white;
+	cursor: pointer;
 
-    position: relative;
+	position: relative;
 }
-#board > div > div{
-    position: absolute;
-    top: 50%;
+#board > div > div {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+}
+#board > div > .x-line {
+	width: 90%;
+	height: 10%;
+
+	transform: translate(-50%, -50%) rotate(-45deg);
+	background-color: var(--ACCENT);
+}
+#board > div > .x-line:nth-of-type(2) {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+#board > div > .o-div {
+	width: 70%;
+	aspect-ratio: 1;
+	border-radius: 200px;
+	border: 20px solid var(--ACCENT);
+
+	transform: translate(-50%, -50%);
+}
+#board span {
+	width: 0;
+	height: 5%;
+
+	position: absolute;
+
+	transition: width 500ms;
+	background-color: black;
+	z-index: 1;
+}
+
+dialog {
+	margin: auto;
+	width: clamp(0px, 50%, 800px);
+}
+dialog span {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	height: 100px;
+}
+dialog button {
+	height: 50px;
+	width: 49%;
+}
+dialog::backdrop{
+	background-color: rgba(0, 0, 0, 0.5);
+}
+/* Winner line */
+.H-1, .H-2, .H-3{
     left: 50%;
-}
-#board > div > .x-line{
-    width: 90%;
-    height: 10%;
-
-    transform: translate(-50%, -50%) rotate(-45deg);
-    background-color: var(--ACCENT);
-}
-#board > div > .x-line:nth-of-type(2){
-    transform: translate(-50%, -50%) rotate(45deg);
-}
-#board > div > .o-div{
-    width: 70%;
-    aspect-ratio: 1;
-    border-radius: 200px;
-    border: 20px solid var(--ACCENT);
-
     transform: translate(-50%, -50%);
 }
-.hidden{
-    display: none;
-    position: absolute;
-    opacity: 0;
-    transform: scale(0);
+.H-1 {
+    top: 16.5%;
+}
+.H-2 {
+    top: 50%;
+}
+.H-3 {
+    top: 83.5%;
+}
+.V-1, .V-2, .V-3{
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+.V-1 {
+    left: 16.5%;
+}
+.V-2 {
+    left: 50%;
+}
+.V-3 {
+    left: 83.5%;
+}
+.D-main {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+.D-counter {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-@media (max-width: 500px){
-    h1{
-        font-size: clamp(3rem, 18vw, 6rem);
-    }
-    p{
-        font-size: 1rem;
-    }
+.hidden {
+	display: none;
+	position: absolute;
+	opacity: 0;
+	transform: scale(0);
 }
 
-@media (max-height: 800px){
-    p{
-        bottom: 25px;
-    }
+@media (max-width: 500px) {
+	h1 {
+		font-size: clamp(3rem, 18vw, 6rem);
+	}
+	p {
+		font-size: 1rem;
+	}
 }
-@media (max-height: 500px){
-    h1{
-        font-size: 3rem;
-    }
-    p{
-        font-size: 1rem;
-    }
-    button{
-        width: 150px;
-    }
+
+@media (max-height: 800px) {
+	p {
+		bottom: 25px;
+	}
+}
+@media (max-height: 500px) {
+	h1 {
+		font-size: 3rem;
+	}
+	p {
+		font-size: 1rem;
+	}
+	button {
+		width: 150px;
+	}
 }
