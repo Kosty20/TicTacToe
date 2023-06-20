@@ -7,68 +7,71 @@ function load() {
 function onLoadHandlers() {
 	const startMenu = document.querySelector('#startMenu');
 	const game = document.querySelector('#game');
-	let backIndex = 0;
 
 	//startMenu
 	const p = document.querySelector('[data-p]');
 	const back = document.querySelector('[data-back]');
+	const symbolPick = document.querySelector('[data-symbolPick]');
 	const btn0 = document.querySelector('[data-pvp-btn]');
 	const btn1 = document.querySelector('[data-pvc-btn]');
 	const btn2 = document.querySelector('[data-easy-btn]');
 	const btn3 = document.querySelector('[data-hard-btn]');
 	const btn4 = document.querySelector('[data-impos-btn]');
 
+	let backIndex = 0;
 	let mode;
+	let startingPlayer = 1;
 
 	window.addEventListener(
 		'click',
 		() => {
 			toggleHidden(p);
-			toggleModeBtns();
+			[btn0, btn1].forEach(toggleHidden);
 		},
 		{ once: true }
 	);
 
 	back.addEventListener('click', () => {
-		if (backIndex === 1) {
-			toggleDifficultyBtns();
-			toggleModeBtns();
-			backIndex--;
-			toggleHidden(back);
-		}
+		goBack();
 	});
 
 	btn1.addEventListener('click', () => {
 		toggleHidden(back);
-		toggleModeBtns();
-		toggleDifficultyBtns();
+		toggleBtns();
 		backIndex++;
 	});
 
 	[btn0, btn2, btn3, btn4].forEach((btn, index) => {
 		btn.addEventListener('click', () => {
-			toggleHidden(startMenu);
-			toggleHidden(game);
+			toggleSection();
 			mode = index;
+
+			goBack();
 		});
 	});
 
+	symbolPick.addEventListener('click', () => {
+		startingPlayer = startingPlayer ? 0 : 1;
+		symbolPick.textContent = startingPlayer ? 'X' : 'O';
+	});
+
 	btn0.onclick = () => NewGame().PvP();
-	btn2.onclick = () => NewGame().PvC(1);
-	btn3.onclick = () => NewGame().PvC(5);
-	btn4.onclick = () => NewGame().PvC(-1);
+	btn2.onclick = () => NewGame().PvC(1, startingPlayer);
+	btn3.onclick = () => NewGame().PvC(5, startingPlayer);
+	btn4.onclick = () => NewGame().PvC(-1, startingPlayer);
 
 	//play area
-	const dialog = document.querySelector('dialog');
+	const gameEnd = document.querySelector('[data-gameEnd]');
+	const paused = document.querySelector('[data-paused]');
+
 	const pauseBtn = document.querySelector('[data-pause]');
 	const restartBtn = document.querySelector('[data-restart]');
-	const backToMenu = document.querySelector('[data-toMenu]');
+	const backToMenu = document.querySelectorAll('[data-toMenu]');
+	const resume = document.querySelector('[data-resume]');
 
 	restartBtn.addEventListener('click', () => {
-		const cells = document.querySelectorAll('#board > div');
-		cells.forEach((cell) => {
-			cell.remove();
-		});
+		closeGame();
+
 		switch (mode) {
 			case 0:
 				NewGame().PvP();
@@ -83,33 +86,56 @@ function onLoadHandlers() {
 				NewGame().PvC(-1);
 				break;
 		}
-		dialog.close();
+
+		gameEnd.close();
 	});
 
-	backToMenu.addEventListener('click', () => {
-		toggleHidden(startMenu);
-		toggleHidden(game);
-		dialog.close();
+	backToMenu.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			toggleSection();
+			gameEnd.close();
+			paused.close();
 
-		const cells = document.querySelectorAll('#board > div');
-		cells.forEach((cell) => {
-			cell.remove();
+			closeGame();
 		});
 	});
 
 	pauseBtn.addEventListener('click', () => {
-		dialog.showModal();
-	})
+		paused.showModal();
+	});
+
+	resume.addEventListener('click', () => {
+		paused.close();
+	});
 
 	//auxiliaries
 	function toggleHidden(target) {
 		target.classList.toggle('hidden');
 	}
-	function toggleModeBtns() {
-		[btn0, btn1].forEach(toggleHidden);
+	function toggleBtns() {
+		toggleHidden(btn0);
+		toggleHidden(btn1);
+		toggleHidden(symbolPick);
+		toggleHidden(btn2);
+		toggleHidden(btn3);
+		toggleHidden(btn4);
 	}
-	function toggleDifficultyBtns() {
-		[btn2, btn3, btn4].forEach(toggleHidden);
+	function toggleSection() {
+		toggleHidden(startMenu);
+		toggleHidden(game);
+	}
+	function goBack() {
+		if (backIndex === 1) {
+			toggleBtns();
+			toggleHidden(back);
+			backIndex--;
+		}
+	}
+	function closeGame() {
+		const cells = document.querySelectorAll('#board > div');
+		cells.forEach((cell) => {
+			cell.remove();
+		});
 	}
 }
 
@@ -118,13 +144,13 @@ function NewGame() {
 
 	const boardDiv = document.querySelector('#board');
 	const cells = [];
+
 	const line = boardDiv.querySelector('span');
 	line.className = '';
 	line.style = '';
 
 	for (let i = 1; i <= 9; i++) {
 		const cell = document.createElement('div');
-
 		cells.push(cell);
 		boardDiv.append(cell);
 	}
@@ -139,8 +165,8 @@ function NewGame() {
 				board.addSymbol(playerTurn, index, cell);
 
 				if (board.isTerminal()) {
-					drawWinningLine(board.isTerminal());
-					showGameEndDialog();
+					_drawWinningLine(board.isTerminal());
+					_showGameEndDialog();
 				}
 
 				playerTurn = playerTurn ? 0 : 1;
@@ -150,37 +176,50 @@ function NewGame() {
 
 	function PvC(difficulty, startingPlayer = 1) {
 		const computer = AIPlayer(difficulty);
-		let playerTurn = startingPlayer;
+		let playerTurn = 1;
 
 		if (!startingPlayer) {
 			const firstChoice = Math.floor(Math.random() * 5) * 2; //center or corner index;
-			board.addSymbol(startingPlayer, firstChoice, cells[firstChoice]);
-			playerTurn = 1;
+			board.addSymbol(playerTurn, firstChoice, cells[firstChoice]);
+			playerTurn = playerTurn ? 0 : 1;
 		}
 
 		cells.forEach((cell, index) => {
 			cell.addEventListener('click', () => {
 				//PLAYER INPUT
-				if (cell.className || board.isTerminal() || !playerTurn) return;
-
+				if (cell.className || board.isTerminal() || playerTurn !== startingPlayer) return;
 				board.addSymbol(playerTurn, index, cell);
 				if (board.isTerminal()) {
-					drawWinningLine(board.isTerminal());
-					showGameEndDialog();
+					_drawWinningLine(board.isTerminal());
+					_showGameEndDialog();
 				}
-				playerTurn = 0;
+				playerTurn = playerTurn ? 0 : 1;
 
 				//AI INPUT
 				computer.getBestMove(board, !startingPlayer, (best) => {
 					board.addSymbol(playerTurn, +best, cells[+best]);
 					if (board.isTerminal()) {
-						drawWinningLine(board.isTerminal());
-						showGameEndDialog();
+						_drawWinningLine(board.isTerminal());
+						_showGameEndDialog();
 					}
-					playerTurn = 1;
+					playerTurn = playerTurn ? 0 : 1;
 				});
 			});
 		});
+	}
+
+	function _drawWinningLine(terminalBoard) {
+		const { winner, direction, row, column, diagonal } = terminalBoard;
+		if (winner === 'draw') return;
+	
+		const line = document.querySelector('#board > span');
+		line.classList.add(`${direction}-${row || column || diagonal}`);
+		line.style.width = row || column ? '95%' : diagonal ? '110%' : '0';
+	}
+
+	function _showGameEndDialog() {
+		const dialog = document.querySelector('dialog');
+		dialog.showModal();
 	}
 
 	return {
@@ -386,18 +425,4 @@ function AIPlayer(maxDepth = -1) {
 		nodesMap,
 		getBestMove,
 	};
-}
-
-function drawWinningLine(terminalBoard) {
-	const { winner, direction, row, column, diagonal } = terminalBoard;
-	if (winner === 'draw') return;
-
-	const line = document.querySelector('#board > span');
-	line.classList.add(`${direction}-${row || column || diagonal}`);
-	line.style.width = row || column ? '95%' : diagonal ? '110%' : '0';
-}
-
-function showGameEndDialog() {
-	const dialog = document.querySelector('dialog');
-	dialog.showModal();
 }

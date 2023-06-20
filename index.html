@@ -7,16 +7,17 @@
 		<title>TicTacToe</title>
 
 		<link rel="stylesheet" href="index.css" />
-        <script src="https://kit.fontawesome.com/73284450b7.js" crossorigin="anonymous"></script>
+		<script src="https://kit.fontawesome.com/73284450b7.js" crossorigin="anonymous"></script>
 		<script src="index.js" defer></script>
 	</head>
 	<body>
-        <section id="startMenu">
-            <button data-back class="hidden"><i class="fa-solid fa-arrow-left-long"></i></button>
+		<section id="startMenu">
+			<button data-back class="hidden"><i class="fa-solid fa-arrow-left-long"></i></button>
 			<h1>TicTacToe!</h1>
 			<div class="btns">
 				<button class="hidden" data-pvp-btn>vs Player</button>
 				<button class="hidden" data-pvc-btn>vs Computer</button>
+				<button class="hidden" data-symbolPick>X</button>
 				<button class="hidden" data-easy-btn>Easy</button>
 				<button class="hidden" data-hard-btn>Hard</button>
 				<button class="hidden" data-impos-btn>Impossible</button>
@@ -24,16 +25,24 @@
 			<p data-p>Click anywhere to start</p>
 		</section>
 
-        <section id="game" class="hidden">
+		<section id="game" class="hidden">
 			<button data-pause><i class="fa-solid fa-pause"></i></button>
-            <div id="board" data-board>
+			<div id="board" data-board>
 				<span></span>
-            </div>
-        </section>
-		<dialog>
+			</div>
+		</section>
+		
+		<dialog data-gameEnd>
 			<span>Winner!</span>
 			<button data-restart>Restart</button>
 			<button data-toMenu>Menu</button>
 		</dialog>
+		
+		<dialog data-paused>
+			<span>Paused</span>
+			<button data-resume>Resume</button>
+			<button data-toMenu>Menu</button>
+		</dialog>
+	
 	</body>
 </html>
