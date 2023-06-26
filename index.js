@@ -1,17 +1,15 @@
-document.addEventListener('DOMContentLoaded', load);
+document.addEventListener('DOMContentLoaded', loadHandlers);
 
-function load() {
-	onLoadHandlers();
-}
-
-function onLoadHandlers() {
+function loadHandlers() {
 	const startMenu = document.querySelector('#startMenu');
 	const game = document.querySelector('#game');
+	let startingPlayer = 1;
 
 	//startMenu
 	const p = document.querySelector('[data-p]');
 	const back = document.querySelector('[data-back]');
-	const symbolPick = document.querySelector('[data-symbolPick]');
+	const symbolPickDiv = document.querySelector('[data-symbolPick]');
+	const symbolPick = document.querySelector('[data-symbolPick] > span');
 	const btn0 = document.querySelector('[data-pvp-btn]');
 	const btn1 = document.querySelector('[data-pvc-btn]');
 	const btn2 = document.querySelector('[data-easy-btn]');
@@ -20,7 +18,6 @@ function onLoadHandlers() {
 
 	let backIndex = 0;
 	let mode;
-	let startingPlayer = 1;
 
 	window.addEventListener(
 		'click',
@@ -50,7 +47,7 @@ function onLoadHandlers() {
 		});
 	});
 
-	symbolPick.addEventListener('click', () => {
+	symbolPickDiv.addEventListener('click', () => {
 		startingPlayer = startingPlayer ? 0 : 1;
 		symbolPick.textContent = startingPlayer ? 'X' : 'O';
 	});
@@ -63,7 +60,6 @@ function onLoadHandlers() {
 	//play area
 	const gameEnd = document.querySelector('[data-gameEnd]');
 	const paused = document.querySelector('[data-paused]');
-
 	const pauseBtn = document.querySelector('[data-pause]');
 	const restartBtn = document.querySelector('[data-restart]');
 	const backToMenu = document.querySelectorAll('[data-toMenu]');
@@ -77,13 +73,13 @@ function onLoadHandlers() {
 				NewGame().PvP();
 				break;
 			case 1:
-				NewGame().PvC(1);
+				NewGame().PvC(1, startingPlayer);
 				break;
 			case 2:
-				NewGame().PvC(5);
+				NewGame().PvC(5, startingPlayer);
 				break;
 			case 3:
-				NewGame().PvC(-1);
+				NewGame().PvC(-1, startingPlayer);
 				break;
 		}
 
@@ -115,7 +111,7 @@ function onLoadHandlers() {
 	function toggleBtns() {
 		toggleHidden(btn0);
 		toggleHidden(btn1);
-		toggleHidden(symbolPick);
+		toggleHidden(symbolPickDiv);
 		toggleHidden(btn2);
 		toggleHidden(btn3);
 		toggleHidden(btn4);
@@ -144,7 +140,6 @@ function NewGame() {
 
 	const boardDiv = document.querySelector('#board');
 	const cells = [];
-
 	const line = boardDiv.querySelector('span');
 	line.className = '';
 	line.style = '';
@@ -161,14 +156,8 @@ function NewGame() {
 		cells.forEach((cell, index) => {
 			cell.addEventListener('click', () => {
 				if (cell.className || board.isTerminal()) return;
-
 				board.addSymbol(playerTurn, index, cell);
-
-				if (board.isTerminal()) {
-					_drawWinningLine(board.isTerminal());
-					_showGameEndDialog();
-				}
-
+				_checkWinner();
 				playerTurn = playerTurn ? 0 : 1;
 			});
 		});
@@ -189,37 +178,54 @@ function NewGame() {
 				//PLAYER INPUT
 				if (cell.className || board.isTerminal() || playerTurn !== startingPlayer) return;
 				board.addSymbol(playerTurn, index, cell);
-				if (board.isTerminal()) {
-					_drawWinningLine(board.isTerminal());
-					_showGameEndDialog();
-				}
+				_checkWinner();
 				playerTurn = playerTurn ? 0 : 1;
 
 				//AI INPUT
 				computer.getBestMove(board, !startingPlayer, (best) => {
 					board.addSymbol(playerTurn, +best, cells[+best]);
-					if (board.isTerminal()) {
-						_drawWinningLine(board.isTerminal());
-						_showGameEndDialog();
-					}
+					_checkWinner();
 					playerTurn = playerTurn ? 0 : 1;
 				});
 			});
 		});
 	}
 
+	function _checkWinner() {
+		const ended = board.isTerminal();
+		if (ended) {
+			_drawWinningLine(ended);
+			setTimeout(() => {
+				_showGameEndDialog(ended);
+			}, 750);
+		}
+	}
+
 	function _drawWinningLine(terminalBoard) {
 		const { winner, direction, row, column, diagonal } = terminalBoard;
 		if (winner === 'draw') return;
-	
+
 		const line = document.querySelector('#board > span');
 		line.classList.add(`${direction}-${row || column || diagonal}`);
 		line.style.width = row || column ? '95%' : diagonal ? '110%' : '0';
+		line.style.transition = 'width 500ms';
 	}
 
-	function _showGameEndDialog() {
-		const dialog = document.querySelector('dialog');
+	function _showGameEndDialog(terminalBoard) {
+		const { winner } = terminalBoard;
+
+		const dialog = document.querySelector('[data-gameEnd]');
 		dialog.showModal();
+
+		const span = dialog.querySelector('span');
+		span.textContent =
+			winner === 'draw'
+				? 'Draw!'
+				: winner === 'x'
+				? 'X Wins!'
+				: winner === 'o'
+				? 'O Wins!'
+				: 'Err';
 	}
 
 	return {

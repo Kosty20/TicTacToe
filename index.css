@@ -5,85 +5,99 @@
 }
 
 :root {
-	--BG: rgb(106, 4, 15);
-	--ACCENT: rgb(250, 163, 7);
+	--BG: rgb(3, 4, 94);
+	--BETWEEN: rgb(0, 180, 216);
+	--ACCENT: rgb(202, 240, 248);
 }
 
 body {
-	min-height: 100vh;
+	height: 100vh;
 	background-color: var(--BG);
 	color: var(--ACCENT);
+	overflow: hidden;
 }
 
-#startMenu > button,
-#game > button {
-	width: 100px;
+button {
+	cursor: pointer;
+	border: none;
+}
+
+section > button {
 	aspect-ratio: 1;
-	border-bottom: 5px solid var(--ACCENT);
-	border-left: 5px solid var(--ACCENT);
-	border-bottom-left-radius: 100px;
+	padding: 20px;
 
 	position: absolute;
+	top: 0;
 	right: 0;
 
-	font-size: 2rem;
+	font-size: 3rem;
 	color: var(--ACCENT);
 
-	background-color: black;
-}
-h1,
-p,
-.btns {
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
-}
-h1 {
-	top: 15vh;
-	font-size: 6rem;
-}
-p {
-	bottom: 100px;
-	font-size: 1.5rem;
-	transition: transform 300ms;
-}
-p.shrink {
-	display: none;
+	background-color: transparent;
 }
 
-.btns {
-	height: clamp(0px, 50vh, 400px);
+section {
+	height: 100%;
+}
 
-	position: absolute;
-	top: 40vh;
-
+#startMenu {
 	display: flex;
 	flex-direction: column;
-	gap: 40px;
-}
-button {
-	height: clamp(50px, 10vh, 150px);
-	width: 300px;
-	border: none;
-	cursor: pointer;
+	justify-content: space-evenly;
+	align-items: center;
 }
 
+h1 {
+	font-size: clamp(3rem, 18vw, 6rem);
+}
+p {
+	font-size: min(5vw, 1.5rem);
+	transition: transform 300ms;
+}
+#startMenu > div:first-of-type {
+	padding: 10px;
+	border: 3px solid white;
+	border-radius: 10px;
+	
+	font-size: 2rem;
+	font-family: Arial, Helvetica, sans-serif;
+	cursor: pointer;
+}
+.btns {
+	display: flex;
+	gap: 40px;
+}
+.btns button {
+	width: min(25vw, 200px);
+	padding: 10px;
+	border-radius: 10px;
+
+	font-size: min(3.5vw, 1.8rem);
+}
+
+#game {
+	display: flex;
+	align-items: center;
+}
 #board {
-	position: relative;
 	aspect-ratio: 1;
-	width: clamp(0px, 90%, 800px);
 	margin: auto;
+
+	position: relative;
 
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	grid-template-rows: repeat(3, 1fr);
-	gap: 5px;
+	gap: 10px;
+
+	background-color: white;
 }
 #board > div {
-	border: 1px solid white;
-	cursor: pointer;
-
 	position: relative;
+	
+	background-color: var(--BG);
+	cursor: pointer;
+	container-type: inline-size;
 }
 #board > div > div {
 	position: absolute;
@@ -104,75 +118,91 @@ button {
 	width: 70%;
 	aspect-ratio: 1;
 	border-radius: 200px;
-	border: 20px solid var(--ACCENT);
+	border: 10cqw solid var(--ACCENT);
 
 	transform: translate(-50%, -50%);
 }
+
 #board span {
 	width: 0;
 	height: 5%;
+	border-radius: 100px;
 
 	position: absolute;
 
-	transition: width 500ms;
-	background-color: black;
+	background-color: var(--BETWEEN);
 	z-index: 1;
 }
 
 dialog {
+	width: clamp(250px, 50%, 800px);
 	margin: auto;
-	width: clamp(0px, 50%, 800px);
+
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+
+	background-color: black;
 }
 dialog span {
+	width: 100%;
+	height: 100px;
+
 	display: flex;
 	align-items: center;
 	justify-content: center;
 
-	height: 100px;
+	font-size: 2rem;
+	background-color: white;
 }
 dialog button {
 	height: 50px;
-	width: 49%;
+	flex: 1;
 }
-dialog::backdrop{
+dialog::backdrop {
 	background-color: rgba(0, 0, 0, 0.5);
 }
+
 /* Winner line */
-.H-1, .H-2, .H-3{
-    left: 50%;
-    transform: translate(-50%, -50%);
+.H-1,
+.H-2,
+.H-3 {
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 .H-1 {
-    top: 16.5%;
+	top: 16.4%;
 }
 .H-2 {
-    top: 50%;
+	top: 50%;
 }
 .H-3 {
-    top: 83.5%;
+	top: 83.6%;
 }
-.V-1, .V-2, .V-3{
-    top: 50%;
-    transform: translate(-50%, -50%) rotate(90deg);
+.V-1,
+.V-2,
+.V-3 {
+	top: 50%;
+	transform: translate(-50%, -50%) rotate(90deg);
 }
 .V-1 {
-    left: 16.5%;
+	left: 16.4%;
 }
 .V-2 {
-    left: 50%;
+	left: 50%;
 }
 .V-3 {
-    left: 83.5%;
+	left: 83.6%;
 }
 .D-main {
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) rotate(45deg);
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%) rotate(45deg);
 }
 .D-counter {
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 .hidden {
@@ -182,28 +212,19 @@ dialog::backdrop{
 	transform: scale(0);
 }
 
-@media (max-width: 500px) {
-	h1 {
-		font-size: clamp(3rem, 18vw, 6rem);
-	}
-	p {
-		font-size: 1rem;
+@media (orientation: landscape) {
+	#board {
+		height: 80%;
 	}
 }
-
-@media (max-height: 800px) {
-	p {
-		bottom: 25px;
+@media (orientation: portrait) {
+	#board {
+		width: 80%;
 	}
-}
-@media (max-height: 500px) {
-	h1 {
-		font-size: 3rem;
+	#game {
+		flex-direction: column;
 	}
-	p {
-		font-size: 1rem;
-	}
-	button {
-		width: 150px;
+	.btns{
+		flex-direction: column;
 	}
 }
